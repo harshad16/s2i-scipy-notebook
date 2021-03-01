@@ -1,7 +1,23 @@
 #!/bin/bash
 
+set -x
 set -eo pipefail
+
+# CREDENTIAL MANAGEMENT
+# check that only one credential "type" is mounted
+NUM=$(find /opt/app-root/secrets/.aws/*/credentials | wc -l)
+
+mkdir -pv $HOME/.aws
+
+if [[ NUM -eq 1 ]]; then
+    # symlink the credentials to default location
+    ln -sf $(find /opt/app-root/secrets/.aws/*/credentials) $HOME/.aws/credentials
+    ln -sf $(find /opt/app-root/secrets/.aws/*/config) $HOME/.aws/config
+    ln -sf $(find /opt/app-root/secrets/.aws/*/s3_folder) $HOME/.aws/s3_folder
+    # otherwise, do nothing
+fi
+
 
 # Execute the run script from the customised builder.
 
-exec /opt/app-root/builder/run
+exec /opt/app-root/builder/run.base "$@"
